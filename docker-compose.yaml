@@ -1,0 +1,48 @@
+version: "3"
+services:
+  master:
+    build:
+      context: .
+      dockerfile: master/Dockerfile
+    networks:
+      - system-network
+    environment:
+      - HOST=master
+      - PORT=8080
+      - SECONDARY_HOSTS=secondary-1,secondary-2
+      - SECONDARY_SECRET=some_secret
+    ports:
+      - "8080:8080"
+
+  secondary-1:
+    build:
+      context: .
+      dockerfile: secondary/Dockerfile
+    networks:
+      - system-network
+    environment:
+      - HOST=secondary-1
+      - PORT=8081
+      - MASTER_HOST=master
+      - SECONDARY_SECRET=some_secret
+    ports:
+      - "8081:8081"
+
+  secondary-2:
+    build:
+      context: .
+      dockerfile: secondary/Dockerfile
+    networks:
+      - system-network
+    environment:
+      - HOST=secondary-2
+      - PORT=8082
+      - MASTER_HOST=master
+      - SLEEP=5
+      - SECONDARY_SECRET=some_secret
+    ports:
+      - "8082:8082"
+
+networks:
+  system-network:
+    driver: bridge
