@@ -11,6 +11,7 @@ services:
       - PORT=8080
       - SECONDARY_HOSTS=secondary-1,secondary-2
       - SECONDARY_SECRET=some_secret
+      - WRITE_CONCERN=2
     ports:
       - "8080:8080"
 
