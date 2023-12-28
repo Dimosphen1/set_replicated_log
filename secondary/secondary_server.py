@@ -1,7 +1,6 @@
 import asyncio
 import logging
 import os
-import time
 
 from aiohttp import web
 
@@ -17,13 +16,17 @@ logging.basicConfig(level=logging.INFO)
 
 async def get_handler(request):
     logging.info(f"Retrieving messages from Secondary ({HOST}:{PORT})")
-    return web.json_response(request.app['messages'].copy())
+    messages = [message["message"] for message in request.app["messages"]]
+    return web.json_response(messages)
 
 
 async def post_handler(request):
     data = await request.json()
-    message = data.get('message')
-    secret = data.get('secret')
+    message = data.get("message")
+    secret = None
+
+    if "secret" in data:
+        secret = data.pop("secret")
 
     if request.host != HOST:
         response_text = f"POST method is only allowed in internal network"
@@ -41,18 +44,39 @@ async def post_handler(request):
         return web.Response(text=response_text, status=403)
 
     if SLEEP:
-        time.sleep(int(SLEEP))
+        await asyncio.sleep(int(SLEEP))
 
     logging.info(f"Adding message: {message}")
-    request.app['messages'].append(message)
+    request.app["messages"].append(data)
+
+    messages = request.app["messages"]
+    messages = deduplicate_messages(messages)
+    messages = order_messages(messages)
+    request.app["messages"] = messages
+    
     response_text = f"Message added to Secondary ({HOST}:{PORT}): {message}"
     logging.info(response_text)
     return web.Response(text=response_text)
 
 
+def deduplicate_messages(messages):
+    checked_timestamps = []
+    deduplicated_messages = []
+    
+    for data in messages:
+        if data["timestamp"] not in checked_timestamps:
+            deduplicated_messages.append(data)
+
+    return deduplicated_messages
+
+
+def order_messages(messages):
+    return sorted(messages, key=lambda data: data["timestamp"])
+
+
 async def main():
     app = web.Application()
-    app['messages'] = []
+    app["messages"] = []
 
     app.router.add_get("/", get_handler)
     app.router.add_post("/", post_handler)
@@ -69,7 +93,7 @@ async def main():
     logging.info(f"Master server started - {HOST}:80, {PORT}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     loop = asyncio.get_event_loop()
     loop.run_until_complete(main())
     loop.run_forever()

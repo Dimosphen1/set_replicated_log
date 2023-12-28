@@ -2,6 +2,7 @@ import asyncio
 import enum
 import logging
 import os
+from datetime import datetime
 
 import aiohttp
 from aiohttp import web
@@ -10,6 +11,7 @@ HOST = os.environ.get("HOST")
 PORT = os.environ.get("PORT")
 SECONDARY_SECRET = os.environ.get("SECRET")
 SECONDARY_HOSTS = os.environ.get("SECONDARY_HOSTS", "").split(",")
+WRITE_CONCERN = int(os.environ.get("WRITE_CONCERN", 1))
 
 
 logging.basicConfig(level=logging.INFO)
@@ -35,12 +37,18 @@ async def post_handler(request):
         return web.Response(text=response_text, status=400)
 
     logging.info(f"Adding message: {message}")
-    replication_status = await perform_replication(request.app, message)
+    timestamp = datetime.utcnow().timestamp()
 
+    tasks = [asyncio.create_task(replicate_message(host, message, timestamp))
+             for host in request.app['secondary_hosts']]
+    request.app['messages'].append(message)
+
+    if WRITE_CONCERN == 1:
+        return web.Response(text=f"Write to Master succeeded, message: {message}")
+
+    replication_status = await perform_replication(tasks)
     if replication_status == ReplicationStatus.SUCCESS:
-        logging.info(f"Replication succeeded, message: {message}")
-        request.app['messages'].append(message)
-        response_text = f"Message added to Master: {message}"
+        response_text = f"Replication succeeded, message: {message}"
         logging.info(response_text)
         return web.Response(text=response_text)
 
@@ -49,34 +57,33 @@ async def post_handler(request):
     return web.Response(text=response_text, status=400)
 
 
-async def perform_replication(app, message):
-    replication_status = {host: ReplicationStatus.FAILURE for host in app['secondary_hosts']}
+async def perform_replication(tasks):
+    successful_writes = 0
 
-    for host in app['secondary_hosts']:
-        logging.info(f"Replication to {host} started, message: {message}")
-        host_status = await replicate_message(host, message)
+    for task in asyncio.as_completed(tasks):
+        host, response_status = await task
+        logging.info(f"Replication to {host} completed with status {response_status}")
 
-        if host_status == 200:
-            logging.info(f"Replication to {host} succeeded, message: {message}")
-            replication_status[host] = ReplicationStatus.SUCCESS
-        else:
-            logging.warning(f"Replication to {host} failed, message: {message}")
+        if response_status == 200:
+            successful_writes += 1
 
-    if all(status == ReplicationStatus.SUCCESS for status in replication_status.values()):
-        return ReplicationStatus.SUCCESS
-    return ReplicationStatus.FAILURE
+            if successful_writes >= WRITE_CONCERN - 1:
+                return ReplicationStatus.SUCCESS
 
 
-async def replicate_message(secondary_url, message):
-    async with aiohttp.ClientSession() as session:
-        payload = {"message": message, "secret": SECONDARY_SECRET}
-
-        try:
-            async with session.post(f"http://{secondary_url}/", json=payload) as response:
-                return response.status
-        except aiohttp.ClientError as e:
-            logging.error(f"Error replicating message to {secondary_url}: {e}")
-            return 500
+async def replicate_message(host, message, timestamp):
+    payload = {
+        "message": message,
+        "secret": SECONDARY_SECRET,
+        "timestamp": timestamp
+    }
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.post(f"http://{host}/", json=payload) as response:
+                return host, response.status
+    except aiohttp.ClientError as e:
+        logging.error(f"Error in replicate_message for {host} with {message}: {e}")
+        return host, 500
 
 
 async def main():
