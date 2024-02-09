@@ -1,0 +1,250 @@
+$ bash iteration_3_demo_script.sh
+
+------ STARTING THE CONFIGURATION -----
+2024/02/09 08:05:27 http2: server: error reading preface from client //./pipe/docker_engine: file has already been closed
+[+] Building 1.4s (21/24)                                                                                                                                                                                                                                                                                                    docker:default
+ => [secondary-2 internal] load .dockerignore                                                                                                                                                                                                                                                                                          0.0s
+ => => transferring context: 2B                                                                                                                                                                                                                                                                                                        0.0s
+ => [secondary-2 internal] load build definition from Dockerfile                                                                                                                                                                                                                                                                       0.0s
+ => => transferring dockerfile: 213B                                                                                                                                                                                                                                                                                                   0.0s
+ => [secondary-1 internal] load .dockerignore                                                                                                                                                                                                                                                                                          0.0s
+ => => transferring context: 2B                                                                                                                                                                                                                                                                                                        0.0s
+ => [secondary-1 internal] load build definition from Dockerfile                                                                                                                                                                                                                                                                       0.0s
+ => => transferring dockerfile: 213B                                                                                                                                                                                                                                                                                                   0.0s
+ => [master internal] load metadata for docker.io/library/python:3.9-slim                                                                                                                                                                                                                                                              1.0s
+ => [master internal] load build definition from Dockerfile                                                                                                                                                                                                                                                                            0.0s
+ => => transferring dockerfile: 204B                                                                                                                                                                                                                                                                                                   0.0s
+ => [master internal] load .dockerignore                                                                                                                                                                                                                                                                                               0.0s
+ => => transferring context: 2B                                                                                                                                                                                                                                                                                                        0.0s
+ => [secondary-2 1/5] FROM docker.io/library/python:3.9-slim@sha256:bcdcaefe092335ff0a0ed421e8a8d12b86fc2c1feb1199fbdac27d67ba808a9c                                                                                                                                                                                                   0.0s
+ => [master internal] load build context                                                                                                                                                                                                                                                                                               0.0s
+ => => transferring context: 9.80kB                                                                                                                                                                                                                                                                                                    0.0s
+ => [secondary-2 internal] load build context                                                                                                                                                                                                                                                                                          0.0s
+ => => transferring context: 3.90kB                                                                                                                                                                                                                                                                                                    0.0s
+ => [secondary-1 internal] load build context                                                                                                                                                                                                                                                                                          0.0s
+ => => transferring context: 115B                                                                                                                                                                                                                                                                                                      0.0s
+ => CACHED [master 2/5] WORKDIR /app                                                                                                                                                                                                                                                                                                   0.0s
+ => CACHED [secondary-2 3/5] COPY requirements.txt .                                                                                                                                                                                                                                                                                   0.0s
+ => CACHED [secondary-2 4/5] RUN pip install -r requirements.txt                                                                                                                                                                                                                                                                       0.0s
+ => CACHED [secondary-2 5/5] COPY /secondary/secondary_server.py .                                                                                                                                                                                                                                                                     0.0s
+ => [secondary-2] exporting to image                                                                                                                                                                                                                                                                                                   0.0s
+ => => exporting layers                                                                                                                                                                                                                                                                                                                0.0s
+ => => writing image sha256:765e1ef913199ca438790dc7854615d8317329d487262fe2dd4e0cbccf39a24f                                                                                                                                                                                                                                           0.0s
+ => => naming to docker.io/library/set_replicated_log-secondary-2                                                                                                                                                                                                                                                                      0.0s
+ => CACHED [master 3/5] COPY requirements.txt .                                                                                                                                                                                                                                                                                        0.0s
+ => CACHED [master 4/5] RUN pip install -r requirements.txt                                                                                                                                                                                                                                                                            0.0s
+ => [master 5/5] COPY /master/master_server.py .                                                                                                                                                                                                                                                                                       0.1s
+ => [secondary-1] exporting to image                                                                                                                                                                                                                                                                                                   0.0s
+ => => exporting layers                                                                                                                                                                                                                                                                                                                0.0s
+ => => writing image sha256:eb5202588a5494584a5efaf44ad1399fe8c846a390ed69d40b310b96241d4f44                                                                                                                                                                                                                                           0.0s
+ => => naming to docker.io/library/set_replicated_log-secondary-1                                                                                                                                                                                                                                                                      0.0s
+ => [master] exporting to image                                                                                                                                                                                                                                                                                                        0.1s
+ => => exporting layers                                                                                                                                                                                                                                                                                                                0.1s
+ => => writing image sha256:ecc48d1194d0c3cd7364f53ddea90ac97afdc2356a435e46b3ccee2fd6f42852                                                                                                                                                                                                                                           0.0s
+ => => naming to docker.io/library/set_replicated_log-master                                                                                                                                                                                                                                                                           0.0s
+[+] Running 4/4
+ ✔ Network set_replicated_log_system-network  Created                                                                                                                                                                                                                                                                                  0.0s
+ ✔ Container secondary-1                      Started                                                                                                                                                                                                                                                                                  0.1s
+ ✔ Container master                           Started                                                                                                                                                                                                                                                                                  0.1s
+ ✔ Container secondary-2                      Started                                                                                                                                                                                                                                                                                  0.1s
+
+
+
+----- PAUSE SECOND SECONDARY -----
+secondary-2
+
+
+
+----- CHECK CONTAINERS  -----
+CONTAINER ID   IMAGE                            COMMAND                  CREATED         STATUS                  PORTS                    NAMES
+9ff6e9e77eaf   set_replicated_log-secondary-1   "python secondary_se…"   6 seconds ago   Up 5 seconds            0.0.0.0:8081->8081/tcp   secondary-1
+e668e58c946c   set_replicated_log-master        "python master_serve…"   6 seconds ago   Up 5 seconds            0.0.0.0:8080->8080/tcp   master
+be7633b5eb7f   set_replicated_log-secondary-2   "python secondary_se…"   6 seconds ago   Up 5 seconds (Paused)   0.0.0.0:8082->8082/tcp   secondary-2
+
+
+
+------ MAKE A POST REQUEST TO MASTER WITH FIRST MESSAGE -----
+Write to Master succeeded, message: Msg1
+
+
+------ MAKE A POST REQUEST TO MASTER WITH SECOND MESSAGE -----
+Replication succeeded, message: Msg2
+
+
+------ MAKE A POST REQUEST TO MASTER WITH THIRD MESSAGE -----
+
+
+
+------ MAKE A POST REQUEST TO MASTER WITH FOURTH MESSAGE -----
+Write to Master succeeded, message: Msg4
+
+
+----- UNPAUSE SECOND SECONDARY -----
+secondary-2
+
+
+
+----- CHECK CONTAINERS  -----
+CONTAINER ID   IMAGE                            COMMAND                  CREATED         STATUS         PORTS                    NAMES
+9ff6e9e77eaf   set_replicated_log-secondary-1   "python secondary_se…"   7 seconds ago   Up 6 seconds   0.0.0.0:8081->8081/tcp   secondary-1
+e668e58c946c   set_replicated_log-master        "python master_serve…"   7 seconds ago   Up 6 seconds   0.0.0.0:8080->8080/tcp   master
+be7633b5eb7f   set_replicated_log-secondary-2   "python secondary_se…"   7 seconds ago   Up 6 seconds   0.0.0.0:8082->8082/tcp   secondary-2
+
+
+
+----- WAIT 5 SECONDS FOR MESSAGES SYNC -----
+
+
+
+------ CHECK MESSAGES SECOND SECONDARY -----
+["Msg1", "Msg2", "Msg3", "Msg4"]
+
+
+----- CHECK SECONDARIES HEALTH  -----
+[{"secondary-1": "healthy"}, {"secondary-2": "healthy"}]
+
+
+----- CHECK MESSAGES ON MASTER  -----
+["Msg1", "Msg2", "Msg3", "Msg4"]
+
+
+----- CHECK MESSAGES ON FIRST SECONDARY  -----
+["Msg1", "Msg2", "Msg3", "Msg4"]
+
+
+----- CHECK MESSAGES ON SECOND SECONDARY  -----
+["Msg1", "Msg2", "Msg3", "Msg4"]
+
+
+----- PAUSE SECOND SECONDARY -----
+secondary-2
+
+
+
+----- WAIT 5 SECONDS FOR HEALTH SYNC -----
+
+
+
+----- CHECK SECONDARIES HEALTH  -----
+[{"secondary-1": "healthy"}, {"secondary-2": "suspected"}]
+
+
+----- WAIT 7 SECONDS FOR HEALTH SYNC -----
+
+
+
+----- CHECK SECONDARIES HEALTH  -----
+[{"secondary-1": "healthy"}, {"secondary-2": "unhealthy"}]
+
+
+------ MAKE A POST REQUEST TO MASTER WITH FIFTH MESSAGE -----
+Replication succeeded, message: Msg5
+
+
+----- UNPAUSE SECOND SECONDARY -----
+secondary-2
+
+
+
+----- WAIT 5 SECONDS FOR MESSAGES SYNC -----
+Replication failed, message: Msg3
+
+
+----- CHECK SECONDARIES HEALTH  -----
+[{"secondary-1": "healthy"}, {"secondary-2": "healthy"}]
+
+
+----- CHECK MESSAGES ON SECOND SECONDARY  -----
+["Msg1", "Msg2", "Msg3", "Msg4", "Msg5"]
+
+
+----- CHECK SECONDARIES HEALTH  -----
+[{"secondary-1": "healthy"}, {"secondary-2": "healthy"}]
+
+
+----- PAUSE FIRST AND SECOND SECONDARY -----
+secondary-1
+secondary-2
+
+
+
+----- WAIT 5 SECONDS FOR HEALTH SYNC -----
+
+
+
+----- CHECK SECONDARIES HEALTH  -----
+[{"secondary-1": "suspected"}, {"secondary-2": "suspected"}]
+
+
+------ TRY TO MAKE A POST REQUEST TO MASTER WITH SIXTH MESSAGE -----
+Quorum is not reached, master available in read-only mode
+
+
+------ TRY TO MAKE A GET REQUEST TO MASTER -----
+["Msg1", "Msg2", "Msg3", "Msg4", "Msg5"]
+
+
+----- WAIT 7 SECONDS FOR HEALTH SYNC -----
+
+
+
+----- CHECK SECONDARIES HEALTH  -----
+[{"secondary-1": "unhealthy"}, {"secondary-2": "unhealthy"}]
+
+
+------ TRY TO MAKE A POST REQUEST TO MASTER WITH SIXTH MESSAGE -----
+Quorum is not reached, master available in read-only mode
+
+
+------ TRY TO MAKE A GET REQUEST TO MASTER -----
+["Msg1", "Msg2", "Msg3", "Msg4", "Msg5"]
+
+
+----- UNPAUSE FIRST SECONDARY -----
+secondary-1
+
+
+
+----- WAIT 5 SECONDS FOR HEALTH SYNC -----
+
+
+
+------ MAKE A POST REQUEST TO MASTER WITH SIXTH MESSAGE -----
+Write to Master succeeded, message: Msg6
+
+
+------ MAKE A POST REQUEST TO MASTER WITH SEVENTH MESSAGE -----
+Replication succeeded, message: Msg7
+
+
+----- UNPAUSE SECOND SECONDARY -----
+secondary-2
+
+
+
+----- WAIT 7 SECONDS FOR HEALTH SYNC -----
+
+
+
+----- CHECK SECONDARIES HEALTH  -----
+[{"secondary-1": "healthy"}, {"secondary-2": "healthy"}]
+
+
+----- CHECK MESSAGES ON MASTER  -----
+["Msg1", "Msg2", "Msg3", "Msg4", "Msg5", "Msg6", "Msg7"]
+
+
+----- CHECK MESSAGES ON FIRST SECONDARY  -----
+["Msg1", "Msg2", "Msg3", "Msg4", "Msg5", "Msg6", "Msg7"]
+
+
+----- CHECK MESSAGES ON SECOND SECONDARY  -----
+["Msg1", "Msg2", "Msg3", "Msg4", "Msg5", "Msg6", "Msg7"]
+
+
+------ STOP THE CONFIGURATION -----
+[+] Running 4/4
+ ✔ Container secondary-1                      Removed                                                                                                                                                                                                                                                                                 10.6s
+ ✔ Container secondary-2                      Removed                                                                                                                                                                                                                                                                                 10.8s
+ ✔ Container master                           Removed                                                                                                                                                                                                                                                                                 10.9s
+ ✔ Network set_replicated_log_system-network  Removed

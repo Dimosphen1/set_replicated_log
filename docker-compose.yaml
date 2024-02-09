@@ -12,8 +12,15 @@ services:
       - SECONDARY_HOSTS=secondary-1,secondary-2
       - SECONDARY_SECRET=some_secret
       - WRITE_CONCERN=2
+      - QUORUM=1
+      - REPLICATE_TIMEOUT=1
+      - MAX_RETRIES=5
+      - HEALTHCHECK_INTERVAL=2
+      - HEALTHCHECK_REQUEST_TIMEOUT=1
+      - HEALTHCHECK_SUSPECT_THRESHOLD=2
     ports:
       - "8080:8080"
+    container_name: master
 
   secondary-1:
     build:
@@ -28,6 +35,7 @@ services:
       - SECONDARY_SECRET=some_secret
     ports:
       - "8081:8081"
+    container_name: secondary-1
 
   secondary-2:
     build:
@@ -43,6 +51,7 @@ services:
       - SECONDARY_SECRET=some_secret
     ports:
       - "8082:8082"
+    container_name: secondary-2
 
 networks:
   system-network:
